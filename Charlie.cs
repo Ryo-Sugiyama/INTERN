@@ -54,66 +54,50 @@ namespace Ateam
         //---------------------------------------------------
         override public void UpdateAI()
         {
-            //　敵データの更新
+            //　データの更新
             enemyList = GetTeamCharacterDataList(TEAM_TYPE.ENEMY);
             playerList = GetTeamCharacterDataList(TEAM_TYPE.PLAYER);
 
+
             for (int i = 0; i < 3; i++)
             {
-                if (enemyList[targetEnemyId].BlockPos.y == playerList[i].BlockPos.y)
+                Debug.Log(SameColumn(playerList[i], enemyList[targetEnemyId]));
+
+                if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.RIGHT)
                 {
-                    //　ターゲットの敵が右にいる
-                    if (enemyList[targetEnemyId].BlockPos.x > playerList[i].BlockPos.x)
+                    Move(playerId[i], Common.MOVE_TYPE.RIGHT);
+                    Debug.Log("RIGHT");
+                }
+
+                else if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.LEFT)
+                {
+                    Move(playerId[i], Common.MOVE_TYPE.LEFT);
+                    Debug.Log("LEFT");
+                }
+                else
+                {
+                    if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.UP)
                     {
-                        Move(playerId[i], Common.MOVE_TYPE.RIGHT);
-                        Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_LONG);
+                        Move(playerId[i], Common.MOVE_TYPE.UP);
+                        Debug.Log("UP");
                     }
-                    //　ターゲットの敵が左にいる
-                    if (enemyList[targetEnemyId].BlockPos.x < playerList[i].BlockPos.x)
+                    else if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.DOWN)
                     {
-                        Move(playerId[i], Common.MOVE_TYPE.LEFT);
-                        Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_LONG);
+                        Move(playerId[i], Common.MOVE_TYPE.DOWN);
+                        Debug.Log("DOWN");
                     }
                     else
                     {
-                        Move(playerId[i], Common.MOVE_TYPE.UP);
-                        Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_LONG);
+                        Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_SHORT);
                     }
                 }
+
             }
-            //　ランダム移動
-            /*
-            for (int i = 0; i < 3; i++)
-            {
-                int move = UnityEngine.Random.Range(0, 4);
-                switch (move)
-                {
-                    case 0:
-                        //上移動
-                        Move(playerId[i], Common.MOVE_TYPE.UP);
-                        break;
 
-                    case 1:
-                        //下移動
-                        Move(playerId[i], Common.MOVE_TYPE.DOWN);
-                        break;
-
-                    case 2:
-                        //左移動
-                        Move(playerId[i], Common.MOVE_TYPE.LEFT);
-                        break;
-
-                    case 3:
-                        //右移動
-                        Move(playerId[i], Common.MOVE_TYPE.RIGHT);
-                        break;
-                }
-            }
-            */
             //　遠距離攻撃に固定
             for (int i = 0; i < 3; i++)
             {
-                Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_LONG);
+                Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_MIDDLE);
             }
         }
 
@@ -122,6 +106,59 @@ namespace Ateam
         //---------------------------------------------------
         override public void ItemSpawnCallback(ItemSpawnData itemData)
         {
+        }
+
+        public enum ENEMY_POS
+        {
+            RIGHT,  // 敵は自身の右方向
+            LEFT,   // 敵は自身の左方向
+            UP,     // 敵は自身の上方向 (画面向かって上方向)
+            DOWN,   // 敵は自身の下方向 (画面向かって下方向)
+            SAME    // 敵と同じ行/列にいる
+        };
+
+        // 自分と敵のIDから同じ行にいるかを確認する
+        // 戻り値：ENEMY_POS
+        // 
+        public ENEMY_POS SameColumn(CharacterModel.Data playerId, CharacterModel.Data enemyId)
+        {
+
+            // 自身と敵は同じ行にいる
+            if (enemyId.BlockPos.x == playerId.BlockPos.x) { return ENEMY_POS.SAME; }
+
+            // 自身と敵は右側にいる
+            if (playerId.BlockPos.x < enemyId.BlockPos.x) { return ENEMY_POS.RIGHT; }
+
+            // それ以外なので、左側にいる
+            return ENEMY_POS.LEFT;
+        }
+
+        // 自分と敵のIDから同じ行にいるかを確認する
+        // 戻り値：ENEMY_POS
+        // 
+        public ENEMY_POS SameRow(CharacterModel.Data playerId, CharacterModel.Data enemyId)
+        {
+
+            // 自身と敵は同じ列にいる
+            if (enemyId.BlockPos.y == playerId.BlockPos.y) { return ENEMY_POS.SAME; }
+
+            // 敵は自身より上方向にいる
+            if (playerId.BlockPos.y < enemyId.BlockPos.y) { return ENEMY_POS.UP; }
+
+            // それ以外なので、敵は下方向にいる
+            return ENEMY_POS.DOWN;
+        }
+
+        // 自分と敵の距離を取得する
+        // 戻り値：距離 (float)
+        public float Distance(int playerId, int enemyId)
+        {
+            CharacterModel.Data player = GetCharacterData(playerId);
+            CharacterModel.Data enemy = GetCharacterData(enemyId);
+
+            float sx = player.BlockPos.x - enemy.BlockPos.x;
+            float sy = player.BlockPos.y - enemy.BlockPos.y;
+            return Mathf.Sqrt(sx * sx + sy * sy);
         }
     }
 }
