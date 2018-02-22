@@ -76,9 +76,9 @@ namespace Ateam
         {
             for (int i = 0; i < 3; i++)
             {
-                Debug.Log(SameColumn(playerList[i], enemyList[targetEnemyId]));
+                Debug.Log(SameColumn(playerList[i], enemyList[i]));
 
-                if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.RIGHT)
+                if (SameColumn(playerList[i], enemyList[i]) == ENEMY_POS.RIGHT)
                 {
                     if (GetStageDataType(playerId[i], Common.MOVE_TYPE.RIGHT))
                         Move(playerId[i], Common.MOVE_TYPE.RIGHT);
@@ -86,41 +86,42 @@ namespace Ateam
                     {
                         Move(playerId[i], Common.MOVE_TYPE.UP);
                     }
+
                 }
 
-                else if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.LEFT)
+                else if (SameColumn(playerList[i], enemyList[i]) == ENEMY_POS.LEFT)
                 {
                     Move(playerId[i], Common.MOVE_TYPE.LEFT);
 
                 }
                 else
                 {
-                    if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.UP)
+                    if (SameRow(playerList[i], enemyList[i]) == ENEMY_POS.UP)
                     {
                         Move(playerId[i], Common.MOVE_TYPE.UP);
                     }
-                    else if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.DOWN)
+                    else if (SameRow(playerList[i], enemyList[i]) == ENEMY_POS.DOWN)
                     {
                         Move(playerId[i], Common.MOVE_TYPE.DOWN);
                     }
                 }
 
-                if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.UP)
+                if (SameRow(playerList[i], enemyList[i]) == ENEMY_POS.UP)
                 {
                     Move(playerId[i], Common.MOVE_TYPE.UP);
                 }
 
-                else if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.DOWN)
+                else if (SameRow(playerList[i], enemyList[i]) == ENEMY_POS.DOWN)
                 {
                     Move(playerId[i], Common.MOVE_TYPE.DOWN);
                 }
                 else
                 {
-                    if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.RIGHT)
+                    if (SameColumn(playerList[i], enemyList[i]) == ENEMY_POS.RIGHT)
                     {
                         Move(playerId[i], Common.MOVE_TYPE.RIGHT);
                     }
-                    else if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.LEFT)
+                    else if (SameColumn(playerList[i], enemyList[i]) == ENEMY_POS.LEFT)
                     {
                         Move(playerId[i], Common.MOVE_TYPE.LEFT);
                     }
@@ -132,11 +133,11 @@ namespace Ateam
         {
             for (int i = 0; i < 3; i++)
             {
-                if (Distance(playerList[i], enemyList[targetEnemyId]) <= 1)
+                if (Distance(playerList[i], enemyList[i]) <= 1)
                 {
                     Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_SHORT);
                 }
-                if (Distance(playerList[i], enemyList[targetEnemyId]) < 3)
+                if (Distance(playerList[i], enemyList[i]) < 3)
                 {
                     Action(playerId[i], Define.Battle.ACTION_TYPE.INVINCIBLE);
                 }
