@@ -7,7 +7,7 @@ namespace Ateam
     public class Charlie : BaseBattleAISystem
     {
         /* 変数宣言と初期化 */
-        int[,] StageData;
+        int[,] stageData;
         int[] playerId = new int[3];
         int[] enemyId = new int[3];
         int targetEnemyId;
@@ -21,7 +21,7 @@ namespace Ateam
         override public void InitializeAI()
         {
             //　ステージデータの取得
-            StageData = GetStageData();
+            stageData = GetStageData();
 
             //　各アクターのオブジェクト格納　
             playerList = GetTeamCharacterDataList(TEAM_TYPE.PLAYER);
@@ -59,46 +59,10 @@ namespace Ateam
             playerList = GetTeamCharacterDataList(TEAM_TYPE.PLAYER);
 
 
-            for (int i = 0; i < 3; i++)
-            {
-                Debug.Log(SameColumn(playerList[i], enemyList[targetEnemyId]));
+            Moving();
 
-                if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.RIGHT)
-                {
-                    Move(playerId[i], Common.MOVE_TYPE.RIGHT);
-                    Debug.Log("RIGHT");
-                }
+            Shoot();
 
-                else if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.LEFT)
-                {
-                    Move(playerId[i], Common.MOVE_TYPE.LEFT);
-                    Debug.Log("LEFT");
-                }
-                else
-                {
-                    if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.UP)
-                    {
-                        Move(playerId[i], Common.MOVE_TYPE.UP);
-                        Debug.Log("UP");
-                    }
-                    else if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.DOWN)
-                    {
-                        Move(playerId[i], Common.MOVE_TYPE.DOWN);
-                        Debug.Log("DOWN");
-                    }
-                    else
-                    {
-                        Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_SHORT);
-                    }
-                }
-
-            }
-
-            //　遠距離攻撃に固定
-            for (int i = 0; i < 3; i++)
-            {
-                Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_MIDDLE);
-            }
         }
 
         //---------------------------------------------------
@@ -106,6 +70,80 @@ namespace Ateam
         //---------------------------------------------------
         override public void ItemSpawnCallback(ItemSpawnData itemData)
         {
+        }
+
+        public void Moving()
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                Debug.Log(SameColumn(playerList[i], enemyList[targetEnemyId]));
+
+                if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.RIGHT)
+                {
+                    if (GetStageDataType(playerId[i], Common.MOVE_TYPE.RIGHT))
+                        Move(playerId[i], Common.MOVE_TYPE.RIGHT);
+                    else if (GetStageDataType(playerId[i], Common.MOVE_TYPE.UP))
+                    {
+                        Move(playerId[i], Common.MOVE_TYPE.UP);
+                    }
+                }
+
+                else if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.LEFT)
+                {
+                    Move(playerId[i], Common.MOVE_TYPE.LEFT);
+
+                }
+                else
+                {
+                    if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.UP)
+                    {
+                        Move(playerId[i], Common.MOVE_TYPE.UP);
+                    }
+                    else if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.DOWN)
+                    {
+                        Move(playerId[i], Common.MOVE_TYPE.DOWN);
+                    }
+                }
+
+                if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.UP)
+                {
+                    Move(playerId[i], Common.MOVE_TYPE.UP);
+                }
+
+                else if (SameRow(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.DOWN)
+                {
+                    Move(playerId[i], Common.MOVE_TYPE.DOWN);
+                }
+                else
+                {
+                    if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.RIGHT)
+                    {
+                        Move(playerId[i], Common.MOVE_TYPE.RIGHT);
+                    }
+                    else if (SameColumn(playerList[i], enemyList[targetEnemyId]) == ENEMY_POS.LEFT)
+                    {
+                        Move(playerId[i], Common.MOVE_TYPE.LEFT);
+                    }
+                }
+            }
+        }
+
+        public void Shoot()
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (Distance(playerList[i], enemyList[targetEnemyId]) <= 1)
+                {
+                    Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_SHORT);
+                }
+                if (Distance(playerList[i], enemyList[targetEnemyId]) < 3)
+                {
+                    Action(playerId[i], Define.Battle.ACTION_TYPE.INVINCIBLE);
+                }
+
+                Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_LONG);
+
+            }
         }
 
         public enum ENEMY_POS
@@ -151,14 +189,40 @@ namespace Ateam
 
         // 自分と敵の距離を取得する
         // 戻り値：距離 (float)
-        public float Distance(int playerId, int enemyId)
+        public float Distance(CharacterModel.Data playerId, CharacterModel.Data enemyId)
         {
-            CharacterModel.Data player = GetCharacterData(playerId);
-            CharacterModel.Data enemy = GetCharacterData(enemyId);
 
-            float sx = player.BlockPos.x - enemy.BlockPos.x;
-            float sy = player.BlockPos.y - enemy.BlockPos.y;
+            float sx = playerId.BlockPos.x - enemyId.BlockPos.x;
+            float sy = playerId.BlockPos.y - enemyId.BlockPos.y;
             return Mathf.Sqrt(sx * sx + sy * sy);
+        }
+
+        public bool GetStageDataType(int _playerId, Common.MOVE_TYPE pos)
+        {
+            CharacterModel.Data playerId = GetCharacterData(_playerId);
+            switch (pos)
+            {
+                case Common.MOVE_TYPE.UP:
+                    if (stageData[(int)playerId.BlockPos.y - 1, (int)playerId.BlockPos.x] == (int)Define.Stage.BLOCK_TYPE.OBSTACLE)
+                        return false;
+                    break;
+
+                case Common.MOVE_TYPE.DOWN:
+                    if (stageData[(int)playerId.BlockPos.y + 1, (int)playerId.BlockPos.x] == (int)Define.Stage.BLOCK_TYPE.OBSTACLE)
+                        return false;
+                    break;
+
+                case Common.MOVE_TYPE.LEFT:
+                    if (stageData[(int)playerId.BlockPos.y, (int)playerId.BlockPos.x - 1] == (int)Define.Stage.BLOCK_TYPE.OBSTACLE)
+                        return false;
+                    break;
+
+                case Common.MOVE_TYPE.RIGHT:
+                    if (stageData[(int)playerId.BlockPos.y, (int)playerId.BlockPos.x + 1] == (int)Define.Stage.BLOCK_TYPE.OBSTACLE)
+                        return false;
+                    break;
+            }
+            return true;
         }
     }
 }
