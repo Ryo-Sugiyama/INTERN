@@ -56,6 +56,7 @@ namespace Ateam
         {
             //　敵データの更新
             enemyList = GetTeamCharacterDataList(TEAM_TYPE.ENEMY);
+            playerList = GetTeamCharacterDataList(TEAM_TYPE.PLAYER);
 
             for (int i = 0; i < 3; i++)
             {
@@ -68,9 +69,14 @@ namespace Ateam
                         Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_LONG);
                     }
                     //　ターゲットの敵が左にいる
-                    else if (enemyList[targetEnemyId].BlockPos.x < playerList[i].BlockPos.x)
+                    if (enemyList[targetEnemyId].BlockPos.x < playerList[i].BlockPos.x)
                     {
-                        Move(playerId[i], Common.MOVE_TYPE.RIGHT);
+                        Move(playerId[i], Common.MOVE_TYPE.LEFT);
+                        Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_LONG);
+                    }
+                    else
+                    {
+                        Move(playerId[i], Common.MOVE_TYPE.UP);
                         Action(playerId[i], Define.Battle.ACTION_TYPE.ATTACK_LONG);
                     }
                 }
